@@ -7,5 +7,8 @@ let path = require("path");
 
 let folder = path.join(__dirname, 'test/');
 
-console.log(null == undefined);
-console.log(null === undefined);
+fs.utimes("./test", Date.now(), Date.now(), (error)=>{
+    if(error){
+        console.log(error);
+    }
+});
