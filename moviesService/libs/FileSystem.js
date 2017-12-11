@@ -5,6 +5,12 @@ let path = require("path");
 let each = require('async').each;
 
 exports.stat = stat;
+exports.setTime = setTime;
+exports.rename = rename;
+exports.createDir = createDir;
+exports.append = append;
+exports.link = link;
+exports.copy = copy;
 exports.checkCreateDir = checkCreateDir;
 exports.writeFile = writeFile;
 exports.readFile = readFile;
