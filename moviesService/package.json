@@ -11,5 +11,9 @@
     "url": "https://github.com/jiahaok/movies.io/master/moviesService"
   },
   "author": "@jiahaok",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.6.0",
+    "underscore": "^1.8.3"
+  }
 }
