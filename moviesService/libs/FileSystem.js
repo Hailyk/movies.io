@@ -1,8 +1,8 @@
 'use strict';
 
-let fs = require("fs");
-let path = require("path");
-let each = require('async').each;
+const fs = require("fs");
+const path = require("path");
+const each = require('async').each;
 
 exports.stat = stat;
 exports.setTime = setTime;
@@ -32,19 +32,22 @@ function stat(location, callback){
 }
 
 function setTime(location, accessTime, modifyTime, callback){
-    location = arguments.shift();
-    callback = location.pop();
-    if(arguments.length > 0){
-        accessTime = accessTime;
-        if(arguments.length > 0){
-            modifyTime = modifyTime;
+    let arg = Array.from(arguments);
+    location = arg.shift();
+    callback = arg.pop();
+    let now = new Date();
+    if(arg.length > 0){
+        accessTime = arg.shift();
+        if(arg.length > 0){
+            modifyTime = arg.shift();
         }
         else{
-            modifyTime = Date.now();
+            modifyTime = now;
         }
     }
     else{
-        accessTime = Date.now();
+        accessTime = now;
+        modifyTime = now;
     }
     location = path.normalize(location);
     fs.utimes(location, accessTime, modifyTime, (error)=>{
@@ -207,10 +210,10 @@ function copyDir(location, destination, callback){
 
 // check if directory exist if not create it
 function checkCreateDir(location, callback){
-    location = path
-    fs.stat(location,(error,stats)=>{
+    location = path;
+    fs.stat(location,(error)=>{
         if(error){
-            if(error.errno == "-2"){
+            if(error.errno === "-2"){
                 fs.mkdir(location,(err)=>{
                     if(error){
                         return callback(err);
@@ -262,7 +265,7 @@ function readFile(location, encoding, callback){
     else{
         encoding = 'utf-8';
     }
-    fs.readFile(location, (error,data)=>{
+    fs.readFile(location, encoding, (error,data)=>{
         if(error){
             return callback(error);
         }
@@ -325,21 +328,21 @@ function removeDirRecursive(location, callback){
     fs.readdir(location, (error, files)=>{
         if(error) return callback(error);
         else{
-            each(files, (file,thiscallback)=>{
+            each(files, (file,callback)=>{
                 let filePath = path.join(location, file);
                 fs.stat(filePath, (error,stats)=>{
-                    if(error) return thiscallback(error);
+                    if(error) return callback(error);
                     else if(stats.isFile()){
                         fs.unlink(filePath,(error)=>{
-                            if(error) return thiscallback(error);
-                            else return thiscallback(null);
+                            if(error) return callback(error);
+                            else return callback(null);
                         });
                     }
                     else if(stats.isDirectory()){
                         let dirPath = path.join(location,"/",file,"/");
                         removeDirRecursive(dirPath, (error)=>{
-                            if(error) return thiscallback(error);
-                            else return thiscallback(null);
+                            if(error) return callback(error);
+                            else return callback(null);
                         });
                     }
                 });
