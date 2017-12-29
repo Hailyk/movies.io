@@ -86,11 +86,12 @@ function createDir(location, callback){
 }
 
 function append(location, data, encoding, callback){
-    callback = arguments.pop();
-    location = arguments.shift();
-    data = arguments.shift();
-    if(arguments.length > 0 ){
-        encoding = arguments.shift();
+    let arg = Array.from(arguments);
+    callback = arg.pop();
+    location = arg.shift();
+    data = arg.shift();
+    if(arg.length > 0 ){
+        encoding = arg.shift();
     }
     else{
         encoding = 'utf-8'
@@ -131,8 +132,8 @@ function link(existingPath, newPath, callback){
 }
 
 function copy(location, destination, callback){
-    location = path.normalize(location);
-    destination = path.normalize(destination);
+    location = path.resolve(path.normalize(location));
+    destination = path.resolve(path.normalize(destination));
     fs.stat(location, (error, stats)=>{
         if(error){
             return callback(error);
@@ -164,56 +165,56 @@ function copyDir(location, destination, callback){
     location = path.normalize(location);
     destination = path.normalize(destination);
     fs.readdir(location, (error, files)=>{
+        if(error){
+            return callback(error);
+        }
+        else{
+            each(files, (file, callback)=>{
+                location = path.join(location, file);
+                destination = path.join(destination, file);
+                fs.stat(location, (error, stats)=>{
+                    if(error){
+                        return callback(error);
+                    }
+                    else if(stats.isFile()){
+                        fs.copyFile(location, destination, (error)=>{
+                            if(error){
+                                return callback(error);
+                            }
+                            else{
+                                return callback(null);
+                            }
+                        });
+                    }
+                    else if(stats.isDirectory()){
+                        copyDir(location, destination, (error)=>{
+                            if(error){
+                                return callback(error);
+                            }
+                            else{
+                                return callback(null);
+                            }
+                        });
+                    }
+                });
+            }, (error)=>{
                 if(error){
                     return callback(error);
                 }
                 else{
-                    each(files, (file, callback)=>{
-                        location = path.join(location, file);
-                        destination = path.join(destination, file);
-                        fs.stat(location, (error, stats)=>{
-                            if(error){
-                                return callback(error);
-                            }
-                            else if(stats.isFile()){
-                                fs.copyFile(location, destination, (error)=>{
-                                    if(error){
-                                        return callback(error);
-                                    }
-                                    else{
-                                        return callback(null);
-                                    }
-                                });
-                            }
-                            else if(stats.isDirectory()){
-                                copyDir(location, destination, (error)=>{
-                                    if(error){
-                                        return callback(error);
-                                    }
-                                    else{
-                                        return callback(null);
-                                    }
-                                });
-                            }
-                        });
-                    }, (error)=>{
-                        if(error){
-                            return callback(error);
-                        }
-                        else{
-                            return callback(null);
-                        }
-                    });
+                    return callback(null);
                 }
             });
+        }
+    });
 }
 
 // check if directory exist if not create it
 function checkCreateDir(location, callback){
-    location = path;
+    location = path.resolve(path.normalize(location));
     fs.stat(location,(error)=>{
         if(error){
-            if(error.errno === "-2"){
+            if(error.errno === -2){
                 fs.mkdir(location,(err)=>{
                     if(error){
                         return callback(err);

@@ -13,7 +13,7 @@ const rootFolder = path.resolve(path.join(__dirname, 'test/'));
 
 describe("FileSystem Library test", function(){
 
-    beforeEach(function(done){
+    before(function(done){
         fs.mkdir(rootFolder, (err)=>{
             expect(err).to.be.null;
             parallel([
@@ -45,7 +45,7 @@ describe("FileSystem Library test", function(){
         });
     });
 
-    afterEach(function(done){
+    after(function(done){
         recursiveDelete(rootFolder, (err)=>{
             expect(err).to.be.null;
             done();
@@ -128,7 +128,7 @@ describe("FileSystem Library test", function(){
                 expect(err).to.be.null;
                 fs.readdir(rootFolder, (err, files)=>{
                     expect(err).to.be.null;
-                    expect(files.includes('renamed')).to.be.false;
+                    expect(files.includes('renamed.test')).to.be.true;
                     done();
                 });
             });
@@ -153,19 +153,95 @@ describe("FileSystem Library test", function(){
     });
 
     describe('#append()', function(){
-
+        it('should add to end of file', function(done){
+            let useFile = path.join(rootFolder, 'test.txt');
+            fs.writeFile(useFile, "hello ", 'utf-8', (err)=>{
+                expect(err).to.be.null;
+                filesystem.append(useFile, "world", "utf-8", (err)=>{
+                    expect(err).to.be.null;
+                    fs.readFile(useFile, 'utf-8', (err,data)=>{
+                        expect(err).to.be.null;
+                        expect(data).to.be.a('String');
+                        expect(data).to.be.equal('hello world');
+                        done();
+                    });
+                });
+            });
+        });
     });
 
     describe('#link()', function(){
-
+        it('should create new link', function(done){
+            let useFile = path.join(rootFolder, 'testLink.txt');
+            let newFile = path.join(rootFolder, 'testLink.doc');
+            fs.writeFile(useFile, "hello world", 'utf-8', (err)=>{
+                expect(err).to.be.null;
+                filesystem.link(useFile, newFile, (err)=>{
+                    expect(err).to.be.null;
+                    fs.readFile(newFile, 'utf-8', (err,data)=>{
+                        expect(err).to.be.null;
+                        expect(data).to.be.a('String');
+                        expect(data).to.be.equal('hello world');
+                        done();
+                    });
+                });
+            });
+        });
     });
 
     describe('#copy()', function(){
-
+        it('should create copy a file', function(done){
+            let useFile = path.join(rootFolder, 'testCopy.txt');
+            let newFile = path.join(rootFolder, 'testCopy.doc');
+            fs.writeFile(useFile, "hello world", 'utf-8', (err)=>{
+                expect(err).to.be.null;
+                filesystem.copy(useFile, newFile, (err)=>{
+                    expect(err).to.be.null;
+                    fs.readFile(newFile, 'utf-8', (err,data)=>{
+                        expect(err).to.be.null;
+                        expect(data).to.be.a('String');
+                        expect(data).to.be.equal('hello world');
+                        fs.readFile(useFile, 'utf-8', (err,data)=>{
+                            expect(err).to.be.null;
+                            expect(data).to.be.a('String');
+                            expect(data).to.be.equal('hello world');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('should create copy a folder', function(done){
+            let useFolder = path.join(rootFolder, 'oldtestCopy/');
+            let newFolder = path.join(rootFolder, 'newtestCopy/');
+            fs.mkdir(useFolder, (err)=>{
+                expect(err).to.be.null;
+                fs.writeFile(path.join(useFolder,'test.txt'),"hello", 'utf-8',(err)=>{
+                    expect(err).to.be.null;
+                    filesystem.copy(useFolder, newFolder, (err)=>{
+                        expect(err).to.be.null;
+                        fs.readdir(rootFolder, (err, files)=>{
+                            expect(err).to.be.null;
+                            console.log(files);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 
     describe('#checkCreateDir()', function(){
-
+        it('should check and create a directory if not exist', function(done){
+            let useFolder = path.join(rootFolder, 'checkCreateDir/');
+            filesystem.checkCreateDir(useFolder, (err)=>{
+                expect(err).to.be.null;
+                fs.readdir(rootFolder, (err, files)=>{
+                    expect(files.includes('checkCreateDir')).to.be.true;
+                    done();
+                });
+            });
+        });
     });
 
     describe('#writeFile()', function(){
@@ -185,17 +261,7 @@ describe("FileSystem Library test", function(){
     });
 
     describe("#remove()", function(){
-        it('should delete test directory', function(done){
-            let folderrm = path.join(rootFolder, 'testFolder');
-            filesystem.remove(folderrm, (err)=>{
-                expect(err).to.be.null;
-                fs.readdir(rootFolder, (err,files)=>{
-                    expect(err).to.be.null;
-                    expect(files.includes('testFolder')).to.be.false;
-                    done();
-                });
-            });
-        });
+
     });
 });
 

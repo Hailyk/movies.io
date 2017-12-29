@@ -1,5 +1,3 @@
 'use strict';
 
-describe('FileSystem', function(){
-    require('./FileSystem.js');
-});
+require('./FileSystem.js');
