@@ -74,8 +74,7 @@ describe("FileSystem Library test", function(){
                     expect(err).to.be.null;
                     fs.stat(useFile, (err, data)=>{
                         expect(err).to.be.null;
-                        let fileTime = new Date(data.atime);
-                        expect(fileTime.getTime()).to.be.at.least(currentTime);
+                        expect(data.atime.getTime()).to.be.at.most(currentTime);
                         done();
                     });
                 });
@@ -86,13 +85,12 @@ describe("FileSystem Library test", function(){
             let currentTime = Date.now();
             fs.writeFile(useFile, "hello", 'utf-8', (err)=>{
                 expect(err).to.be.null;
-                let atime = new Date(1514531336263);
+                let atime = new Date(1514531336000);
                 filesystem.setTime(useFile,atime,(err)=>{
                     expect(err).to.be.null;
                     fs.stat(useFile, (err, data)=>{
                         expect(err).to.be.null;
-                        let fileTime = new Date(data.atime);
-                        expect(fileTime.getTime()).to.be.equal(atime.getTime());
+                        expect(data.atime.getTime()).to.be.equal(atime.getTime());
                         done();
                     });
                 });
@@ -103,16 +101,14 @@ describe("FileSystem Library test", function(){
             let currentTime = Date.now();
             fs.writeFile(useFile, "hello", 'utf-8', (err)=>{
                 expect(err).to.be.null;
-                let atime = new Date(1514531336263);
+                let atime = new Date(1514531336000);
                 let mtime = new Date(1514531300000);
                 filesystem.setTime(useFile,atime,mtime,(err)=>{
                     expect(err).to.be.null;
                     fs.stat(useFile, (err, data)=>{
                         expect(err).to.be.null;
-                        let fileATime = new Date(data.atime);
-                        let fileMTime = new Date(data.mtime);
-                        expect(fileATime.getTime()).to.be.equal(atime.getTime());
-                        expect(fileMTime.getTime()).to.be.equal(mtime.getTime());
+                        expect(data.atime.getTime()).to.be.equal(atime.getTime());
+                        expect(data.mtime.getTime()).to.be.equal(mtime.getTime());
                         done();
                     });
                 });
