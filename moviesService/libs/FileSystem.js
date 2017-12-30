@@ -162,48 +162,53 @@ function copy(location, destination, callback){
 }
 
 function copyDir(location, destination, callback){
-    location = path.normalize(location);
-    destination = path.normalize(destination);
+    location = path.resolve(path.normalize(location));
+    destination = path.normalize(path.normalize(destination));
     fs.readdir(location, (error, files)=>{
         if(error){
             return callback(error);
         }
         else{
-            each(files, (file, callback)=>{
-                location = path.join(location, file);
-                destination = path.join(destination, file);
-                fs.stat(location, (error, stats)=>{
+            fs.mkdir(destination, (err)=>{
+                if(err){
+                    return callback(err);
+                }
+                each(files, (file, callback)=>{
+                    location = path.join(location, file);
+                    destination = path.join(destination, file);
+                    fs.stat(location, (error, stats)=>{
+                        if(error){
+                            return callback(error);
+                        }
+                        else if(stats.isFile()){
+                            fs.copyFile(location, destination, (error)=>{
+                                if(error){
+                                    return callback(error);
+                                }
+                                else{
+                                    return callback(null);
+                                }
+                            });
+                        }
+                        else if(stats.isDirectory()){
+                            copyDir(location, destination, (error)=>{
+                                if(error){
+                                    return callback(error);
+                                }
+                                else{
+                                    return callback(null);
+                                }
+                            });
+                        }
+                    });
+                }, (error)=>{
                     if(error){
                         return callback(error);
                     }
-                    else if(stats.isFile()){
-                        fs.copyFile(location, destination, (error)=>{
-                            if(error){
-                                return callback(error);
-                            }
-                            else{
-                                return callback(null);
-                            }
-                        });
-                    }
-                    else if(stats.isDirectory()){
-                        copyDir(location, destination, (error)=>{
-                            if(error){
-                                return callback(error);
-                            }
-                            else{
-                                return callback(null);
-                            }
-                        });
+                    else{
+                        return callback(null);
                     }
                 });
-            }, (error)=>{
-                if(error){
-                    return callback(error);
-                }
-                else{
-                    return callback(null);
-                }
             });
         }
     });

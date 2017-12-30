@@ -218,7 +218,6 @@ describe("FileSystem Library test", function(){
                         expect(err).to.be.null;
                         fs.readdir(rootFolder, (err, files)=>{
                             expect(err).to.be.null;
-                            console.log(files);
                             done();
                         });
                     });
