@@ -5,6 +5,7 @@ const path = require("path");
 const each = require('async').each;
 
 exports.stat = stat;
+exports.readDir = readDir;
 exports.setTime = setTime;
 exports.rename = rename;
 exports.createDir = createDir;
@@ -27,6 +28,18 @@ function stat(location, callback){
         }
         else{
             return callback(null, stats);
+        }
+    });
+}
+
+function readDir(location, callback){
+    location = path.normalize(path.normalize(location));
+    fs.readdir(location, (err, files)=>{
+        if(err){
+            return callback(err);
+        }
+        else{
+            return callback(null, files);
         }
     });
 }
@@ -219,7 +232,7 @@ function checkCreateDir(location, callback){
     location = path.resolve(path.normalize(location));
     fs.stat(location,(error)=>{
         if(error){
-            if(error.errno === -2){
+            if(error.errno === -4058){
                 fs.mkdir(location,(err)=>{
                     if(error){
                         return callback(err);
@@ -262,7 +275,7 @@ function writeFile(location, data, callback){
 
 // read file at location
 function readFile(location, encoding, callback){
-    let args = arguments;
+    let args = Array.from(arguments);
     location = args.shift();
     callback = args.pop();
     if(args.length > 0){
@@ -281,9 +294,10 @@ function readFile(location, encoding, callback){
     });
 }
 
-function createReadStream(location, start, end, callback){
-    let args = arguments;
+function createReadStream(location, encoding, start, end, callback){
+    let args = Array.from(arguments);
     location = args.shift();
+    encoding = args.shift();
     callback = args.pop();
     fs.stat(location,(error,stats)=>{
         if(error){
@@ -302,14 +316,15 @@ function createReadStream(location, start, end, callback){
             start = 0;
             end = stats.size;
         }
-        let rs = fs.createReadStream(location,{start:start,end:end});
+        let rs = fs.createReadStream(location,{encoding:encoding,start:start,end:end});
         return callback(null, rs);
     });
 }
 
-function createWriteStream(location, start, callback){
-    let args = arguments;
+function createWriteStream(location, encoding, start, callback){
+    let args = Array.from(arguments);
     location = args.shift();
+    encoding = args.shift();
     callback = args.pop();
     if(args.length > 0){
         start = args.shift();
@@ -323,7 +338,7 @@ function createWriteStream(location, start, callback){
             return callback(error);
         }
         else{
-            let ws = fs.createWriteStream(location,{start:start});
+            let ws = fs.createWriteStream(location,{encoding:encoding,start:start});
             return callback(null, ws); 
         }
     });

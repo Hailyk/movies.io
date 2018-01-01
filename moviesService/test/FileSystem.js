@@ -64,6 +64,16 @@ describe("FileSystem Library test", function(){
         });
     });
 
+    describe('#readDir()', function(){
+        it('should return array of files in directory', function(done){
+            filesystem.readDir(rootFolder, (err, files)=>{
+                expect(err).to.be.null;
+                expect(files).to.be.an('array');
+                done();
+            });
+        });
+    });
+
     describe('#setTime()', function(){
         it('should set current time if no time passed', function(done){
             let useFile = path.join(rootFolder, 'test1.test');
@@ -74,7 +84,7 @@ describe("FileSystem Library test", function(){
                     expect(err).to.be.null;
                     fs.stat(useFile, (err, data)=>{
                         expect(err).to.be.null;
-                        expect(data.atime.getTime()).to.be.at.most(currentTime);
+                        expect(data.atime.getTime()).to.be.at.least(currentTime);
                         done();
                     });
                 });
@@ -240,23 +250,129 @@ describe("FileSystem Library test", function(){
     });
 
     describe('#writeFile()', function(){
-
+        it('should write a file', function(done){
+            let useFolder = path.join(rootFolder, 'writeFile.txt');
+            filesystem.writeFile(useFolder, "test data", (err)=>{
+                expect(err).to.be.null;
+                fs.readFile(useFolder, 'utf-8', (err,data)=>{
+                    expect(err).to.be.null;
+                    expect(data).to.be.equal('test data');
+                    done();
+                });
+            });
+        });
     });
 
     describe('#readFile()', function(){
-
+        it('should write a file', function(done){
+            let useFolder = path.join(rootFolder, 'readFile.txt');
+            fs.writeFile(useFolder, "test data", (err)=>{
+                expect(err).to.be.null;
+                filesystem.readFile(useFolder, 'utf-8', (err,data)=>{
+                    expect(err).to.be.null;
+                    expect(data).to.be.equal('test data');
+                    done();
+                });
+            });
+        });
     });
 
     describe('#createReadStream()', function(){
-
+        it('should create read stream', function(done){
+            let useFile = path.join(rootFolder, 'readStreamFile.txt');
+            fs.writeFile(useFile, 'test data', 'utf-8',(err)=>{
+                expect(err).to.be.null;
+                filesystem.createReadStream(useFile,'utf-8',(err,rs)=>{
+                    expect(err).to.be.null;
+                    expect(rs).to.be.a('object');
+                    let dataReaded = "";
+                    rs.on('data', (chuck)=>{
+                        dataReaded+=chuck;
+                    });
+                    rs.on('end', ()=>{
+                        expect(dataReaded).to.be.equal('test data');
+                        done();
+                    });
+                });
+            });
+        });
     });
 
     describe('#createWriteStream()', function(){
-
+        it('should create write stream', function(done){
+            let useFile = path.join(rootFolder, 'writeStreamFile.txt');
+            filesystem.createWriteStream(useFile, 'utf-8', (err, ws)=>{
+                expect(err).to.be.null;
+                expect(ws).to.be.an('object');
+                ws.write('hello world!');
+                ws.end();
+                fs.readFile(useFile, 'utf-8', (err, data)=>{
+                    expect(err).to.be.null;
+                    expect(data).to.be.equal('hello world!');
+                    done();
+                });
+            });
+        });
     });
 
     describe("#remove()", function(){
-
+        it('should remove a file', function(done){
+            let useFile = path.join(rootFolder, 'testRemoveFile.txt');
+            fs.writeFile(useFile, "test data", 'utf-8', (err)=>{
+                expect(err).to.be.null;
+                filesystem.remove(useFile, (err)=>{
+                    expect(err).to.be.null;
+                    fs.readdir(rootFolder, (err, files)=>{
+                        expect(err).to.be.null;
+                        expect(files.includes('testRemoveFile.txt')).to.be.false;
+                        done();
+                    });
+                });
+            });
+        });
+        it('should remove a directory', function(done){
+            let useFolder = path.join(rootFolder, 'testRemoveFolder/');
+            fs.mkdir(useFolder, (err)=>{
+                expect(err).to.be.null;
+                parallel([
+                    (done)=>{
+                        let thisFolder = path.join(useFolder, 'folder1');
+                        fs.mkdir(thisFolder, (err)=>{
+                            expect(err).to.be.null;
+                            let thisFile = path.join(thisFolder, "test.file");
+                            fs.writeFile(thisFile, "hello", 'utf-8', (err)=>{
+                                expect(err).to.be.null;
+                                done();
+                            });
+                        });
+                    },
+                    (done)=>{
+                        let thisFile = path.join(useFolder, "test.file");
+                        fs.writeFile(thisFile, "hello", 'utf-8', (err)=>{
+                            expect(err).to.be.null;
+                            done();
+                        });
+                    },
+                    (done)=>{
+                        let thisFolder = path.join(useFolder, 'folder2');
+                        fs.mkdir(thisFolder, (err)=>{
+                            expect(err).to.be.null;
+                            done();
+                        });
+                    },
+                ],(err)=>{
+                    expect(err).to.be.null;
+                    filesystem.remove(useFolder, (err)=>{
+                        expect(err).to.be.null;
+                        fs.readdir(rootFolder, (err, files)=>{
+                            expect(err).to.be.null;
+                            expect(files.includes("testRemoveFolder")).to.be.false;
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });
 
