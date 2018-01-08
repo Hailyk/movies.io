@@ -230,11 +230,19 @@ function copyDir(location, destination, callback){
 // check if directory exist if not create it
 function checkCreateDir(location, callback){
     location = path.resolve(path.normalize(location));
-    fs.stat(location,(error)=>{
-        if(error){
-            if(error.errno === -4058){
-                fs.mkdir(location,(err)=>{
-                    if(error){
+    let previousDir = path.join(location, "..");
+    previousDir = path.normalize(previousDir);
+    fs.readdir(previousDir, (err, files)=>{
+        if(err){
+            return callback(err);
+        }
+        else{
+            if(files.includes(path.basename(location))){
+                return callback();
+            }
+            else{
+                fs.mkdir(location, (err)=>{
+                    if(err){
                         return callback(err);
                     }
                     else{
@@ -242,12 +250,6 @@ function checkCreateDir(location, callback){
                     }
                 });
             }
-            else{
-                return callback(error);
-            }
-        }
-        else{
-            return callback(null);
         }
     });
 }

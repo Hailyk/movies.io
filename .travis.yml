@@ -1,0 +1,9 @@
+language: node_js
+dist: xenial
+node_js:
+    - "9"
+install:
+    - "npm install -g mocha"
+    - "cd moviesService && npm install && cd .."
+script:
+    - "cd moviesService && npm test && cd .."

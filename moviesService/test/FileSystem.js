@@ -9,7 +9,7 @@ const fs = require("fs");
 const path = require("path");
 
 
-const rootFolder = path.resolve(path.join(__dirname, 'test/'));
+const rootFolder = path.resolve(path.join(__dirname, 'testFileSystem/'));
 
 describe("FileSystem Library test", function(){
 
@@ -84,7 +84,7 @@ describe("FileSystem Library test", function(){
                     expect(err).to.be.null;
                     fs.stat(useFile, (err, data)=>{
                         expect(err).to.be.null;
-                        expect(data.atime.getTime()).to.be.at.least(currentTime);
+                        expect(data.atime.getTime()).to.be.at.most(currentTime);
                         done();
                     });
                 });
@@ -242,6 +242,7 @@ describe("FileSystem Library test", function(){
             filesystem.checkCreateDir(useFolder, (err)=>{
                 expect(err).to.be.null;
                 fs.readdir(rootFolder, (err, files)=>{
+                    expect(err).to.be.null;
                     expect(files.includes('checkCreateDir')).to.be.true;
                     done();
                 });
