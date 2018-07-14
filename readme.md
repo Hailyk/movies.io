@@ -1,1 +1,0 @@
-[![Build Status](https://travis-ci.org/jiahaok/movies.io.svg?branch=dev)](https://travis-ci.org/jiahaok/movies.io)
