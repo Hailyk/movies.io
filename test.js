@@ -1,16 +1,18 @@
 'use strict';
 
-const movieScanner = require('./movieScanner.js');
+const catalog = require('./catalog.js');
 const fs = require('fs');
 const path = require('path');
 
-let fss = new movieScanner(path.join(__dirname,"movies"));
+let movies = new catalog(path.join(__dirname,"movies"));
 
-fss.buildCatalog((err, catalog)=>{
+let time = process.hrtime();
+movies.buildCatalog((err, catalog)=>{
   if(err){
-    console.log(err);
+    console.error(err);
   }
-  else{
-    console.dir(catalog);
-  }
+  time = process.hrtime(time);
+  time = time[0]+"."+time[1];
+  console.log(time+" second/s");
+  console.dir(catalog);
 });
